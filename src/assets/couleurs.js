@@ -10,7 +10,7 @@ export const COULEURS = {
     1: "#ffffff",
   },
   nodejs: {
-    0: "transparent",
+    0: "#000000",
     1: "#5BAB46",
     2: "#438F3E",
   },
