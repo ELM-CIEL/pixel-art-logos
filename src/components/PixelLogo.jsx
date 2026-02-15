@@ -5,6 +5,7 @@ import { COULEURS } from "../assets/couleurs";
 export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
   const canvasRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
+  const [coloredPixels, setColoredPixels] = useState(new Set());
 
   const matrix = MATRICES[logo];
   const colors = COULEURS[logo];
@@ -28,7 +29,20 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
       for (let x = 0; x < cols; x++) {
         const value = matrix[y][x];
         if (value !== 0) {
-          ctx.fillStyle = isHovered ? "#FFFFFF" : "#000000";
+          const pixelKey = `${x}-${y}`;
+          const isColored = coloredPixels.has(pixelKey);
+
+          // Couleur : si passage de la souris, on colore en blanc, sinon en noir
+          let color;
+          if (isColored) {
+            color = colors[value] || colors[1];
+          } else if (isHovered) {
+            color = "#ffffff";
+          } else {
+            color = "#000000";
+          }
+
+          ctx.fillStyle = color;
           ctx.beginPath();
           ctx.arc(
             x * pixelSize + pixelSize / 2,
@@ -41,7 +55,42 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
         }
       }
     }
-  }, [logo, pixelSize, matrix, colors, isHovered]);
+  }, [logo, pixelSize, matrix, colors, isHovered, coloredPixels]);
+
+  const handleMouseMove = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !matrix) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = ((e.clientX - rect.left) / rect.width) * matrix[0].length;
+    const mouseY = ((e.clientY - rect.top) / rect.height) * matrix.length;
+
+    const pixelX = Math.floor(mouseX);
+    const pixelY = Math.floor(mouseY);
+
+    if (
+      pixelX >= 0 &&
+      pixelX < matrix[0].length &&
+      pixelY >= 0 &&
+      pixelY < matrix.length &&
+      matrix[pixelY][pixelX] !== 0
+    ) {
+      const pixelKey = `${pixelX}-${pixelY}`;
+
+      if (!coloredPixels.has(pixelKey)) {
+        setColoredPixels((prev) => new Set([...prev, pixelKey]));
+      }
+    }
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
+    setColoredPixels(new Set()); // Réinitialise les couleurs
+  };
 
   if (!matrix || !colors) {
     return <div className="text-red-500">Logo non trouvé : {logo}</div>;
@@ -50,8 +99,9 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
   return (
     <div
       style={{ width: size, height: size }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       <canvas
         ref={canvasRef}
