@@ -1,35 +1,20 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import PixelLogo from "./components/PixelLogo";
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <PixelLogo logo="react" size={150} pixelSize={8} />
+        <PixelLogo logo="javascript" size={150} pixelSize={8} />
+        <PixelLogo logo="nextjs" size={150} pixelSize={8} />
+        <PixelLogo logo="nodejs" size={150} pixelSize={8} />
+        <PixelLogo logo="tailwind" size={150} pixelSize={8} />
+        <PixelLogo logo="python" size={150} pixelSize={8} />
+        <PixelLogo logo="mysql" size={150} pixelSize={8} />
+        <PixelLogo logo="mongodb" size={150} pixelSize={8} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    </div>
+  );
 }
 
-export default App
+export default App;

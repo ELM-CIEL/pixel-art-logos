@@ -1,35 +1,31 @@
-export const couleurs = {
+export const COULEURS = {
   react: {
-    0: "transparent",
-    1: "#61DAFB",
+    1: "#61dafb",
   },
   javascript: {
-    0: "#F7DF1E",
-    1: "#000000",
+    1: "#f7df1e",
+    0: "#000000",
   },
   nextjs: {
-    0: "transparent",
-    1: "#000000",
+    1: "#ffffff",
   },
   nodejs: {
     0: "transparent",
-    1: "#339933",
+    1: "#5BAB46",
+    2: "#438F3E",
   },
   tailwind: {
-    0: "transparent",
-    1: "#339933",
+    1: "#06b6d4",
   },
   python: {
-    0: "transparent",
-    1: "#3776AB",
-    2: "#FFD43B",
+    1: "#3776ab",
+    2: "#ffd343",
   },
   mysql: {
-    0: "transparent",
-    1: "#4479A1",
+    1: "#4479a1",
   },
   mongodb: {
-    0: "transparent",
-    1: "#47A248",
+    1: "#47a248",
+    0: "#3fa037",
   },
 };
