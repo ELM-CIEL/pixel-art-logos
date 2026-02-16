@@ -69,7 +69,7 @@ export default function LogoGrid({ isDark }) {
               transition: "border-color 0.3s ease",
             }}
           >
-            <PixelLogo logo={logo} size={120} pixelSize={6} />
+            <PixelLogo logo={logo} size={120} pixelSize={6} isDark={isDark} />
           </div>
         ))}
       </div>
