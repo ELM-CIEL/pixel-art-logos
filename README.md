@@ -1,16 +1,70 @@
-# React + Vite
+# 🎨 Pixel Art Logos
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Animations interactives de logos en pixel art avec React et Canvas API
 
-Currently, two official plugins are available:
+![Demo](demo_pc.gif)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Démarrage rapide
 
-## React Compiler
+```bash
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## ✨ Fonctionnalités
 
-## Expanding the ESLint configuration
+- Animation pixel par pixel au hover (desktop)
+- Animation au scroll (mobile)
+- Mode clair/sombre adaptatif
+- Grille responsive (4→2 colonnes)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## 🎯 Ajouter un logo
+
+**1. Convertir l'image en matrice**  
+J'ai utilisé [Convertisseur Pixel Art](https://github.com/ELM-CIEL/convertisseur-pixel-art) pour créer les matrices
+
+**2. Ajouter dans `src/assets/matrices.js`**
+
+```javascript
+export const MATRICES = {
+  monlogo: [
+    [0, 1, 1, 0],
+    [1, 2, 2, 1],
+    [0, 1, 1, 0],
+  ],
+};
+```
+
+**3. Ajouter dans `src/assets/couleurs.js`**
+
+```javascript
+export const COULEURS = {
+  monlogo: { 0: "transparent", 1: "#FF5733", 2: "#FFC300" },
+};
+```
+
+## ⚙️ Configuration
+
+| Paramètre         | Valeur | Fichier         |
+| ----------------- | ------ | --------------- |
+| Pixels/frame      | 4      | `pixelLogo.jsx` |
+| Interval          | 10ms   | `pixelLogo.jsx` |
+| Fade duration     | 300ms  | `pixelLogo.jsx` |
+| Shimmer           | 500ms  | `pixelLogo.jsx` |
+| Mobile breakpoint | 768px  | `LogoGrid.jsx`  |
+
+## 🛠️ Technologies
+
+- React 18.3
+- Vite 5.0
+- Canvas API
+- Intersection Observer
+
+## 📄 Licence
+
+MIT
+
+## 🙏 Crédits
+
+- Concept visuel inspiré par le travail de [Bakhtiyor Ganijon](https://github.com/thebkht)
+- Matrices créées avec [Convertisseur Pixel Art](https://github.com/ELM-CIEL/convertisseur-pixel-art)
