@@ -56,10 +56,24 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
     return pixels;
   }, [matrix]);
 
+  // Calcule la vitesse d'animation pour une durée constante
+  const animationConfig = useMemo(() => {
+    const totalPixels = allPixels.length;
+    if (totalPixels === 0) return { pixelsPerFrame: 8, intervalMs: 5 };
+
+    // Durée cible : 500ms pour tous les logos (2x plus rapide)
+    const targetDuration = 250; // ms
+    const intervalMs = 5; // intervalle fixe
+    const totalFrames = targetDuration / intervalMs;
+    const pixelsPerFrame = Math.max(1, Math.ceil(totalPixels / totalFrames));
+
+    return { pixelsPerFrame, intervalMs };
+  }, [allPixels.length]);
+
   const rows = matrix?.length || 0;
   const cols = matrix?.[0]?.length || 0;
 
-  // Animation automatique
+  // Animation automatique avec vitesse normalisée
   useEffect(() => {
     if (!allPixels.length) return;
 
@@ -69,6 +83,8 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
     let timeout;
     let currentIndex = 0;
 
+    const { pixelsPerFrame, intervalMs } = animationConfig;
+
     if (isHovered) {
       // Shuffle l'ordre et initialise
       shuffledOrder = shuffle([...Array(allPixels.length).keys()]);
@@ -77,13 +93,17 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
       setActivePixels(newActive);
       setFadeOutPixels(new Set());
 
-      // Délai réduit à 100ms
+      // Délai réduit à 50ms
       timeout = setTimeout(() => {
         interval = setInterval(() => {
           const newFadeIn = new Set();
 
-          // 8 pixels à la fois
-          for (let i = 0; i < 8 && currentIndex < shuffledOrder.length; i++) {
+          // Nombre de pixels adapté à la taille du logo
+          for (
+            let i = 0;
+            i < pixelsPerFrame && currentIndex < shuffledOrder.length;
+            i++
+          ) {
             newActive[shuffledOrder[currentIndex]] = true;
             newFadeIn.add(shuffledOrder[currentIndex]);
             currentIndex++;
@@ -92,13 +112,13 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
           setActivePixels([...newActive]);
           setFadeInPixels(newFadeIn);
 
-          setTimeout(() => setFadeInPixels(new Set()), 200);
+          setTimeout(() => setFadeInPixels(new Set()), 150);
 
           if (currentIndex >= shuffledOrder.length) {
             clearInterval(interval);
           }
-        }, 5);
-      }, 100);
+        }, intervalMs);
+      }, 50);
     } else {
       // Animation de sortie (reverse)
       const hasActivePixels = activePixels.some(Boolean);
@@ -117,7 +137,8 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
         interval = setInterval(() => {
           const newFadeOut = new Set();
 
-          for (let i = 0; i < 8 && currentIndex >= 0; i++) {
+          // Même nombre de pixels pour la sortie
+          for (let i = 0; i < pixelsPerFrame && currentIndex >= 0; i++) {
             newActive[shuffledOrder[currentIndex]] = false;
             newFadeOut.add(shuffledOrder[currentIndex]);
             currentIndex--;
@@ -126,20 +147,20 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
           setActivePixels([...newActive]);
           setFadeOutPixels(newFadeOut);
 
-          setTimeout(() => setFadeOutPixels(new Set()), 200);
+          setTimeout(() => setFadeOutPixels(new Set()), 150);
 
           if (currentIndex < 0) {
             clearInterval(interval);
           }
-        }, 5);
-      }, 100);
+        }, intervalMs);
+      }, 50);
     }
 
     return () => {
       if (timeout) clearTimeout(timeout);
       if (interval) clearInterval(interval);
     };
-  }, [isHovered, allPixels]);
+  }, [isHovered, allPixels, animationConfig]);
 
   // Génération de nuances de gris pour logos blancs
   useEffect(() => {
@@ -201,7 +222,7 @@ export default function PixelLogo({ logo, size = 200, pixelSize = 8 }) {
     return () => clearInterval(shimmerInterval);
   }, [isHovered, activePixels, allPixels.length]);
 
-  // Dessine le canvas aec nuances de gris et shimmer
+  // Dessine le canvas avec nuances de gris et shimmer
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !matrix || !colors) return;

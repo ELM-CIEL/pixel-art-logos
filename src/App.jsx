@@ -1,18 +1,21 @@
-import PixelLogo from "./components/PixelLogo";
+import { useState } from "react";
+import Page from "./components/Page/Page";
+import ThemeToggle from "./components/ThemeToggle";
+import "./App.css";
 
 function App() {
+  const [isDark, setIsDark] = useState(true);
+
   return (
-    <div className="min-h-screen bg-gray-900 flex items-center justify-center p-8">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <PixelLogo logo="react" size={150} pixelSize={8} />
-        <PixelLogo logo="javascript" size={150} pixelSize={8} />
-        <PixelLogo logo="nextjs" size={150} pixelSize={8} />
-        <PixelLogo logo="nodejs" size={150} pixelSize={8} />
-        <PixelLogo logo="tailwind" size={150} pixelSize={8} />
-        <PixelLogo logo="python" size={150} pixelSize={8} />
-        <PixelLogo logo="mysql" size={150} pixelSize={8} />
-        <PixelLogo logo="mongodb" size={150} pixelSize={8} />
-      </div>
+    <div
+      className="App"
+      style={{
+        backgroundColor: isDark ? "#000000" : "#ffffff",
+        transition: "background-color 0.3s ease",
+      }}
+    >
+      <ThemeToggle onThemeChange={setIsDark} />
+      <Page isDark={isDark} />
     </div>
   );
 }
