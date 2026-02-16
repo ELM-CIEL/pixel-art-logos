@@ -4,15 +4,15 @@ export const COULEURS = {
   },
   javascript: {
     1: "#f7df1e",
-    0: "#000000",
+    2: "#000000",
   },
   nextjs: {
     1: "#ffffff",
   },
   nodejs: {
-    0: "#000000",
-    1: "#5BAB46",
-    2: "#438F3E",
+    0: "transparent",
+    1: "#539E43",
+    2: "#539E43",
   },
   tailwind: {
     1: "#06b6d4",

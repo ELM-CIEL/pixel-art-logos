@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, useMemo } from "react";
 import { MATRICES } from "../assets/matrices";
 import { COULEURS } from "../assets/couleurs";
 
-// Fonction shuffle
 const shuffle = (array) => {
   let shuffled = [...array];
   let n = shuffled.length;
@@ -26,6 +25,8 @@ export default function PixelLogo({
 }) {
   const canvasRef = useRef(null);
   const shuffledOrderRef = useRef([]);
+  // Ajout d'une ref pour l'état actif afin de garantir la synchronisation lors des changements rapides
+  const activePixelsRef = useRef([]);
 
   const [isHovered, setIsHovered] = useState(false);
   const [activePixels, setActivePixels] = useState([]);
@@ -37,18 +38,13 @@ export default function PixelLogo({
   const matrix = MATRICES[logo];
   const colors = COULEURS[logo];
 
-  // Détecte si le logo est principalement blanc
   const isWhiteLogo = useMemo(() => {
     if (!colors) return false;
     const mainColor = colors[1] || "";
-    return (
-      mainColor.toLowerCase() === "#ffffff" ||
-      mainColor.toLowerCase() === "#fff" ||
-      mainColor === "#FFFFFF"
-    );
+    const c = mainColor.toLowerCase();
+    return c === "#ffffff" || c === "#fff" || mainColor === "#FFFFFF";
   }, [colors]);
 
-  // Collecte tous les pixels
   const allPixels = useMemo(() => {
     const pixels = [];
     if (matrix) {
@@ -63,7 +59,6 @@ export default function PixelLogo({
     return pixels;
   }, [matrix]);
 
-  // Configuration fixe pour une animation cohérente
   const animationConfig = useMemo(() => {
     return { pixelsPerFrame: 4, intervalMs: 10 };
   }, []);
@@ -71,14 +66,19 @@ export default function PixelLogo({
   const rows = matrix?.length || 0;
   const cols = matrix?.[0]?.length || 0;
 
-  // Gère le forceHover pour mobile
   useEffect(() => {
-    if (isMobile) {
-      setIsHovered(forceHover);
-    }
+    if (isMobile) setIsHovered(forceHover);
   }, [forceHover, isMobile]);
 
-  // Animation automatique avec vitesse normalisée
+  // RESET CRITIQUE : Vide l'état quand le logo change pour éviter le bug de persistance
+  useEffect(() => {
+    const empty = Array(allPixels.length).fill(false);
+    activePixelsRef.current = empty;
+    setActivePixels(empty);
+    setShimmerPixels([]);
+    setGrayShades([]);
+  }, [logo, allPixels.length]);
+
   useEffect(() => {
     if (!allPixels.length) return;
 
@@ -95,12 +95,12 @@ export default function PixelLogo({
       shuffledOrderRef.current = shuffledOrder;
       newActive = Array(allPixels.length).fill(false);
       setActivePixels(newActive);
+      activePixelsRef.current = newActive;
       setFadeOutPixels(new Set());
 
       timeout = setTimeout(() => {
         interval = setInterval(() => {
           const newFadeIn = new Set();
-
           for (
             let i = 0;
             i < pixelsPerFrame && currentIndex < shuffledOrder.length;
@@ -110,48 +110,40 @@ export default function PixelLogo({
             newFadeIn.add(shuffledOrder[currentIndex]);
             currentIndex++;
           }
-
           setActivePixels([...newActive]);
+          activePixelsRef.current = [...newActive];
           setFadeInPixels(newFadeIn);
-
           setTimeout(() => setFadeInPixels(new Set()), 300);
-
-          if (currentIndex >= shuffledOrder.length) {
-            clearInterval(interval);
-          }
+          if (currentIndex >= shuffledOrder.length) clearInterval(interval);
         }, intervalMs);
       }, 200);
     } else {
-      const hasActivePixels = activePixels.some(Boolean);
-
+      // Utilisation de la ref pour vérifier l'état actuel de manière fiable
+      const hasActivePixels = activePixelsRef.current.some(Boolean);
       if (!hasActivePixels) return;
 
-      shuffledOrder = shuffledOrderRef.current.length
-        ? shuffledOrderRef.current
-        : [...Array(allPixels.length).keys()];
+      shuffledOrder =
+        shuffledOrderRef.current.length === allPixels.length
+          ? shuffledOrderRef.current
+          : [...Array(allPixels.length).keys()];
 
       currentIndex = shuffledOrder.length - 1;
-      newActive = Array.from(activePixels);
+      newActive = [...activePixelsRef.current];
       setFadeInPixels(new Set());
 
       timeout = setTimeout(() => {
         interval = setInterval(() => {
           const newFadeOut = new Set();
-
           for (let i = 0; i < pixelsPerFrame && currentIndex >= 0; i++) {
             newActive[shuffledOrder[currentIndex]] = false;
             newFadeOut.add(shuffledOrder[currentIndex]);
             currentIndex--;
           }
-
           setActivePixels([...newActive]);
+          activePixelsRef.current = [...newActive];
           setFadeOutPixels(newFadeOut);
-
           setTimeout(() => setFadeOutPixels(new Set()), 300);
-
-          if (currentIndex < 0) {
-            clearInterval(interval);
-          }
+          if (currentIndex < 0) clearInterval(interval);
         }, intervalMs);
       }, 200);
     }
@@ -160,82 +152,58 @@ export default function PixelLogo({
       if (timeout) clearTimeout(timeout);
       if (interval) clearInterval(interval);
     };
-  }, [isHovered, allPixels, animationConfig]);
+  }, [isHovered, allPixels, logo, animationConfig]);
 
-  // Génération de nuances de gris pour logos blancs
   useEffect(() => {
     if (!isWhiteLogo || !isHovered || allPixels.length === 0) {
       setGrayShades([]);
       return;
     }
-
     const updateGrayShades = () => {
       const shades = allPixels.map(() => {
-        if (isDark) {
-          // Mode sombre: nuances gris clair à blanc
-          const grayValue = 208 + Math.floor(Math.random() * 47);
-          const hex = grayValue.toString(16).padStart(2, "0");
-          return `#${hex}${hex}${hex}`;
-        } else {
-          // Mode clair: nuances gris foncé à noir
-          const grayValue = Math.floor(Math.random() * 60);
-          const hex = grayValue.toString(16).padStart(2, "0");
-          return `#${hex}${hex}${hex}`;
-        }
+        const grayValue = isDark
+          ? 208 + Math.floor(Math.random() * 47)
+          : Math.floor(Math.random() * 60);
+        const hex = grayValue.toString(16).padStart(2, "0");
+        return `#${hex}${hex}${hex}`;
       });
       setGrayShades(shades);
     };
-
     updateGrayShades();
     const grayInterval = setInterval(updateGrayShades, 400);
-
     return () => clearInterval(grayInterval);
   }, [isWhiteLogo, isHovered, allPixels.length, isDark]);
 
-  // Shimmer
   useEffect(() => {
     if (!isHovered || allPixels.length === 0) {
       setShimmerPixels([]);
       return;
     }
-
     const updateShimmer = () => {
-      const activeCount = activePixels.filter(Boolean).length;
-
-      if (activeCount === 0) return;
-
+      const activeIndices = [];
+      for (let i = 0; i < activePixels.length; i++) {
+        if (activePixels[i]) activeIndices.push(i);
+      }
+      if (activeIndices.length === 0) return;
       const shimmerPercent = 0.3 + Math.random() * 0.4;
       const shimmerCount = Math.max(
         1,
-        Math.min(100, Math.round(shimmerPercent * activeCount)),
+        Math.min(100, Math.round(shimmerPercent * activeIndices.length)),
       );
-
-      const activeIndices = [];
-      for (let i = 0; i < activePixels.length; i++) {
-        if (activePixels[i]) {
-          activeIndices.push(i);
-        }
-      }
-
       const shuffled = shuffle(activeIndices);
       setShimmerPixels(shuffled.slice(0, shimmerCount));
     };
-
     updateShimmer();
     const shimmerInterval = setInterval(updateShimmer, 500);
-
     return () => clearInterval(shimmerInterval);
   }, [isHovered, activePixels, allPixels.length]);
 
-  // Dessine le canvas avec adaptation mode clair/sombre
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !matrix || !colors) return;
-
     const ctx = canvas.getContext("2d");
     canvas.width = cols * pixelSize;
     canvas.height = rows * pixelSize;
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     for (let i = 0; i < allPixels.length; i++) {
@@ -245,21 +213,16 @@ export default function PixelLogo({
       const isFadingOut = fadeOutPixels.has(i);
 
       let color;
-
       if (isActive && !isFadingOut) {
         if (isWhiteLogo) {
-          // Logos blancs: nuances adaptées au thème
           color = grayShades[i] || (isDark ? "#e0e0e0" : "#404040");
         } else {
-          // Logos colorés: couleurs normales
           color = colors[value] || colors[1];
         }
       } else {
-        // État par défaut: adapté au thème
         color = isDark ? "#f5f5f5" : "#000000";
       }
 
-      // Dessine le pixel principal
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(
@@ -271,7 +234,6 @@ export default function PixelLogo({
       );
       ctx.fill();
 
-      // Contour subtil pour logos blancs
       if (isWhiteLogo && isActive && !isFadingOut) {
         ctx.strokeStyle = isDark ? "#b0b0b0" : "#606060";
         ctx.lineWidth = 0.5;
@@ -286,24 +248,14 @@ export default function PixelLogo({
         ctx.stroke();
       }
 
-      // Shimmer adapté au thème
       if (isActive && isShimmering && !isFadingOut) {
-        if (isWhiteLogo) {
-          const shimmerOpacity = 0.5 + (i % 4) * 0.1;
-          // Mode sombre: shimmer blanc / Mode clair: shimmer noir
-          ctx.fillStyle = isDark
-            ? `rgba(255, 255, 255, ${shimmerOpacity})`
-            : `rgba(0, 0, 0, ${shimmerOpacity})`;
-        } else {
-          const shimmerOpacity = 0.3 + (i % 5) * 0.1;
-          // Shimmer blanc pour mode sombre, noir pour mode clair
-          ctx.fillStyle = isDark
-            ? `rgba(255, 255, 255, ${shimmerOpacity})`
-            : `rgba(0, 0, 0, ${shimmerOpacity})`;
-        }
-
+        const shimmerOpacity = isWhiteLogo
+          ? 0.5 + (i % 4) * 0.1
+          : 0.3 + (i % 5) * 0.1;
+        ctx.fillStyle = isDark
+          ? `rgba(255, 255, 255, ${shimmerOpacity})`
+          : `rgba(0, 0, 0, ${shimmerOpacity})`;
         const shimmerSize = (pixelSize / 2 - 0.5) * (0.9 + (i % 3) * 0.1);
-
         ctx.beginPath();
         ctx.arc(
           x * pixelSize + pixelSize / 2,
@@ -330,39 +282,16 @@ export default function PixelLogo({
     isDark,
   ]);
 
-  const handleMouseEnter = () => {
-    if (!isMobile) {
-      setIsHovered(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    if (!isMobile) {
-      setIsHovered(false);
-    }
-  };
-
-  if (!matrix || !colors) {
-    return <div>Logo non trouvé</div>;
-  }
-
   return (
     <div
-      style={{
-        width: size,
-        height: size,
-        position: "relative",
-      }}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      key={logo} // GARANTIE ANTI-BUG : Recrée le composant à chaque changement de logo
+      style={{ width: size, height: size, position: "relative" }}
+      onMouseEnter={() => !isMobile && setIsHovered(true)}
+      onMouseLeave={() => !isMobile && setIsHovered(false)}
     >
       <canvas
         ref={canvasRef}
-        style={{
-          width: "100%",
-          height: "100%",
-          imageRendering: "pixelated",
-        }}
+        style={{ width: "100%", height: "100%", imageRendering: "pixelated" }}
       />
     </div>
   );
