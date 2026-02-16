@@ -1,6 +1,11 @@
+import { useEffect, useRef, useState } from "react";
 import PixelLogo from "../PixelLogo";
 
 export default function LogoGrid({ isDark }) {
+  const [isMobile, setIsMobile] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const sectionRef = useRef(null);
+
   const logos = [
     "react",
     "nextjs",
@@ -12,8 +17,46 @@ export default function LogoGrid({ isDark }) {
     "mongodb",
   ];
 
+  // Détecte si mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Intersection Observer pour détecter le scroll (mobile seulement)
+  useEffect(() => {
+    if (!isMobile || !sectionRef.current) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          setIsInView(entry.isIntersecting);
+        });
+      },
+      {
+        threshold: 0.3, // Animation démarre quand 30% de la section est visible
+        rootMargin: "0px",
+      },
+    );
+
+    observer.observe(sectionRef.current);
+
+    return () => {
+      if (sectionRef.current) {
+        observer.unobserve(sectionRef.current);
+      }
+    };
+  }, [isMobile]);
+
   return (
     <div
+      ref={sectionRef}
       style={{
         width: "100%",
         minHeight: "100vh",
@@ -42,7 +85,7 @@ export default function LogoGrid({ isDark }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
+          gridTemplateColumns: isMobile ? "repeat(2, 1fr)" : "repeat(4, 1fr)",
           gap: "0",
           maxWidth: "1000px",
           width: "100%",
@@ -55,21 +98,26 @@ export default function LogoGrid({ isDark }) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              padding: "32px",
+              padding: isMobile ? "16px" : "32px",
               borderTop: `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"}`,
-              borderLeft:
-                index % 4 === 0
-                  ? `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"}`
-                  : "none",
+              borderLeft: (isMobile ? index % 2 === 0 : index % 4 === 0)
+                ? `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"}`
+                : "none",
               borderRight: `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"}`,
-              borderBottom:
-                index >= 4
-                  ? `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"}`
-                  : "none",
+              borderBottom: (isMobile ? index >= 2 : index >= 4)
+                ? `1px solid ${isDark ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)"}`
+                : "none",
               transition: "border-color 0.3s ease",
             }}
           >
-            <PixelLogo logo={logo} size={120} pixelSize={6} isDark={isDark} />
+            <PixelLogo
+              logo={logo}
+              size={isMobile ? 80 : 120}
+              pixelSize={isMobile ? 4 : 6}
+              isDark={isDark}
+              isMobile={isMobile}
+              forceHover={isMobile && isInView}
+            />
           </div>
         ))}
       </div>

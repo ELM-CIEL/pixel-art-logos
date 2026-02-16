@@ -21,6 +21,8 @@ export default function PixelLogo({
   size = 200,
   pixelSize = 8,
   isDark = true,
+  isMobile = false,
+  forceHover = false,
 }) {
   const canvasRef = useRef(null);
   const shuffledOrderRef = useRef([]);
@@ -68,6 +70,13 @@ export default function PixelLogo({
 
   const rows = matrix?.length || 0;
   const cols = matrix?.[0]?.length || 0;
+
+  // Gère le forceHover pour mobile
+  useEffect(() => {
+    if (isMobile) {
+      setIsHovered(forceHover);
+    }
+  }, [forceHover, isMobile]);
 
   // Animation automatique avec vitesse normalisée
   useEffect(() => {
@@ -322,11 +331,15 @@ export default function PixelLogo({
   ]);
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
+    if (!isMobile) {
+      setIsHovered(true);
+    }
   };
 
   const handleMouseLeave = () => {
-    setIsHovered(false);
+    if (!isMobile) {
+      setIsHovered(false);
+    }
   };
 
   if (!matrix || !colors) {
