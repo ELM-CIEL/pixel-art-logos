@@ -1,27 +1,34 @@
 # 🎨 Pixel Art Logos
 
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-7-646CFF?logo=vite&logoColor=white)
+
 > Animations interactives de logos en pixel art avec React et Canvas API
 
 ![Demo](demo_pc.gif)
 
-## 🚀 Démarrage rapide
-
-```bash
-npm install
-npm run dev
-```
-
-## ✨ Fonctionnalités
+## Fonctionnalités
 
 - Animation pixel par pixel au hover (desktop)
 - Animation au scroll (mobile)
 - Mode clair/sombre adaptatif
 - Grille responsive (4→2 colonnes)
 
-## 🎯 Ajouter un logo
+## Démarrage rapide
+
+```bash
+# Installation
+npm install
+
+# Lancement du serveur de développement
+npm run dev
+```
+
+## Ajouter un logo
 
 **1. Convertir l'image en matrice**  
-J'ai utilisé [Convertisseur Pixel Art](https://github.com/ELM-CIEL/convertisseur-pixel-art) pour créer les matrices
+Utilisez [Convertisseur Pixel Art](https://github.com/ELM-CIEL/convertisseur-pixel-art) pour générer la matrice
 
 **2. Ajouter dans `src/assets/matrices.js`**
 
@@ -35,7 +42,7 @@ export const MATRICES = {
 };
 ```
 
-**3. Ajouter dans `src/assets/couleurs.js`**
+**3. Configurer les couleurs dans `src/assets/couleurs.js`**
 
 ```javascript
 export const COULEURS = {
@@ -43,7 +50,7 @@ export const COULEURS = {
 };
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 | Paramètre         | Valeur | Fichier         |
 | ----------------- | ------ | --------------- |
@@ -53,18 +60,18 @@ export const COULEURS = {
 | Shimmer           | 500ms  | `pixelLogo.jsx` |
 | Mobile breakpoint | 768px  | `LogoGrid.jsx`  |
 
-## 🛠️ Technologies
+## Technologies
 
-- React 18.3
-- Vite 5.0
-- Canvas API
-- Intersection Observer
+- [React](https://react.dev/)
+- [Vite](https://vite.dev/)
+- [Canvas API](https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API)
+- [Intersection Observer](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API)
 
-## 📄 Licence
+## Licence
 
-MIT
+[MIT](LICENSE)
 
-## 🙏 Crédits
+## Crédits
 
 - Concept visuel inspiré par le travail de [Bakhtiyor Ganijon](https://github.com/thebkht)
 - Matrices créées avec [Convertisseur Pixel Art](https://github.com/ELM-CIEL/convertisseur-pixel-art)
